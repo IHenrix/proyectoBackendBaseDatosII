@@ -66,7 +66,7 @@ public class AuthService {
         this.emailService = emailService;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = UnauthorizedException.class)
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         // Extraer información de la solicitud
         String ipAddress = getClientIp(httpRequest);
