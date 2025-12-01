@@ -92,6 +92,11 @@ public class UsuarioDao {
         jdbcTemplate.update(sql, usuarioId);
     }
 
+    public void activarCuenta(Long usuarioId) {
+        String sql = "UPDATE usuario SET estado='A', intentos_fallidos=0, fecha_modificacion=NOW() WHERE usuario_id=?";
+        jdbcTemplate.update(sql, usuarioId);
+    }
+
     public Optional<Usuario> findByUsername(String username) {
         String sql = """
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
@@ -152,7 +157,6 @@ public class UsuarioDao {
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
                 JOIN persona p ON u.persona_id = p.persona_id
-                WHERE u.estado='A'
                 ORDER BY u.usuario_id
                 """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapUsuario(rs));

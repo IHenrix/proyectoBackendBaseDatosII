@@ -141,6 +141,14 @@ public class UsuarioService {
     }
 
     @Transactional
+    public void activar(Long usuarioId) {
+        Usuario usuario = usuarioDao.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+        usuarioDao.activarCuenta(usuarioId);
+        usuarioDao.actualizarIntentosFallidos(usuarioId, 0);
+    }
+
+    @Transactional
     public void desbloquearCuenta(Long usuarioId) {
         Usuario usuario = usuarioDao.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));

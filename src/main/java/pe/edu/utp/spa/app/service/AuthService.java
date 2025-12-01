@@ -116,7 +116,7 @@ public class AuthService {
                     geoInfo.getPais(),
                     geoInfo.getCiudad()
             );
-            throw new UnauthorizedException("Credenciales invalidas");
+            throw new UnauthorizedException("Usuario inactivo. Contacte al administrador.");
         }
 
         if (!passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {
