@@ -76,4 +76,16 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
         return claims.getSubject();
     }
+
+    public String generateResetPasswordToken(Long usuarioId, String email) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(email)
+                .claim("uid", usuarioId)
+                .claim("type", "reset_password")
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(900000))) // 15 minutos
+                .signWith(signingKey)
+                .compact();
+    }
 }
