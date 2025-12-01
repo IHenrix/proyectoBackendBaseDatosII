@@ -91,7 +91,7 @@ public class UsuarioService {
                 .fechaNacimiento(request.fechaNacimiento())
                 .genero(request.genero())
                 .direccion(request.direccion())
-                .estado("A")
+                .estado(request.estado())
                 .build();
         personaDao.update(existente.getPersonaId(), persona);
 

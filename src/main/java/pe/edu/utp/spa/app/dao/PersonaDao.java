@@ -49,7 +49,7 @@ public class PersonaDao {
     public void update(Long personaId, Persona persona) {
         String sql = """
                 UPDATE persona
-                SET nombres=?, apellido_paterno=?, apellido_materno=?, tipo_documento_id=?, numero_documento=?, email=?, telefono=?, fecha_nacimiento=?, genero=?, direccion=?, estado='A', fecha_modificacion=NOW()
+                SET nombres=?, apellido_paterno=?, apellido_materno=?, tipo_documento_id=?, numero_documento=?, email=?, telefono=?, fecha_nacimiento=?, genero=?, direccion=?, estado=?, fecha_modificacion=NOW()
                 WHERE persona_id=?
                 """;
         jdbcTemplate.update(sql,
@@ -63,6 +63,7 @@ public class PersonaDao {
                 persona.getFechaNacimiento() != null ? Date.valueOf(persona.getFechaNacimiento()) : null,
                 persona.getGenero(),
                 persona.getDireccion(),
+                persona.getEstado(),
                 personaId);
     }
 
