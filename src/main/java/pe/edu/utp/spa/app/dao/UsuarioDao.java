@@ -82,6 +82,33 @@ public class UsuarioDao {
         jdbcTemplate.update("UPDATE usuario SET fecha_ultimo_acceso=NOW(), fecha_modificacion=NOW() WHERE usuario_id=?", usuarioId);
     }
 
+    public void bloquearCuenta(Long usuarioId) {
+        String sql = "UPDATE usuario SET estado='B', fecha_modificacion=NOW() WHERE usuario_id=?";
+        jdbcTemplate.update(sql, usuarioId);
+    }
+
+    public void desbloquearCuenta(Long usuarioId) {
+        String sql = "UPDATE usuario SET estado='A', intentos_fallidos=0, fecha_modificacion=NOW() WHERE usuario_id=?";
+        jdbcTemplate.update(sql, usuarioId);
+    }
+
+    public Optional<Usuario> findByUsername(String username) {
+        String sql = """
+                SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
+                       u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
+                       p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
+                       p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
+                FROM usuario u
+                JOIN persona p ON u.persona_id = p.persona_id
+                WHERE u.username=?
+                """;
+        return jdbcTemplate.query(sql, rs -> {
+            if (!rs.next()) return Optional.empty();
+            return Optional.of(mapUsuario(rs));
+        }, username);
+    }
+
     public Optional<Usuario> findActivoByUsername(String username) {
         String sql = """
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,

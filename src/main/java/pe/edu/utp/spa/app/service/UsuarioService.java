@@ -140,6 +140,16 @@ public class UsuarioService {
         personaDao.deactivate(usuario.getPersonaId());
     }
 
+    @Transactional
+    public void desbloquearCuenta(Long usuarioId) {
+        Usuario usuario = usuarioDao.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+        if (!"B".equals(usuario.getEstado())) {
+            throw new BadRequestException("La cuenta no está bloqueada");
+        }
+        usuarioDao.desbloquearCuenta(usuarioId);
+    }
+
     private void validarUnicidad(String username, Long usuarioId, Long tipoDoc, String nroDoc, String email, Long personaId) {
         if (usuarioDao.existsByUsername(username, usuarioId)) {
             throw new BadRequestException("El username ya existe");

@@ -46,4 +46,10 @@ public class AdminUsuarioController {
         usuarioService.desactivar(id);
         return ResponseEntity.ok(new ApiResponse(true, "Usuario desactivado"));
     }
+
+    @PostMapping("/{id}/desbloquear")
+    public ResponseEntity<ApiResponse> desbloquearCuenta(@PathVariable Long id) {
+        usuarioService.desbloquearCuenta(id);
+        return ResponseEntity.ok(new ApiResponse(true, "Cuenta desbloqueada exitosamente. El usuario puede volver a iniciar sesión."));
+    }
 }

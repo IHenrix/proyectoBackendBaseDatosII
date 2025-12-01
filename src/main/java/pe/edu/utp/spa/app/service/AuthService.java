@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.utp.spa.app.dao.IntentoLoginDao;
+import pe.edu.utp.spa.app.dao.ParametroSistemaDao;
 import pe.edu.utp.spa.app.dao.PermisoDao;
 import pe.edu.utp.spa.app.dao.RolDao;
 import pe.edu.utp.spa.app.dao.TokenRecuperacionPasswordDao;
@@ -35,6 +36,7 @@ public class AuthService {
     private final PermisoDao permisoDao;
     private final IntentoLoginDao intentoLoginDao;
     private final TokenRecuperacionPasswordDao tokenRecuperacionPasswordDao;
+    private final ParametroSistemaDao parametroSistemaDao;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final GeoLocationService geoLocationService;
@@ -46,6 +48,7 @@ public class AuthService {
             PermisoDao permisoDao,
             IntentoLoginDao intentoLoginDao,
             TokenRecuperacionPasswordDao tokenRecuperacionPasswordDao,
+            ParametroSistemaDao parametroSistemaDao,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider,
             GeoLocationService geoLocationService,
@@ -56,6 +59,7 @@ public class AuthService {
         this.permisoDao = permisoDao;
         this.intentoLoginDao = intentoLoginDao;
         this.tokenRecuperacionPasswordDao = tokenRecuperacionPasswordDao;
+        this.parametroSistemaDao = parametroSistemaDao;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.geoLocationService = geoLocationService;
@@ -70,7 +74,10 @@ public class AuthService {
         UserAgentInfo userAgentInfo = UserAgentParser.parse(userAgent);
         GeoLocationInfo geoInfo = geoLocationService.getGeoLocation(ipAddress);
 
-        Usuario usuario = usuarioDao.findActivoByUsername(request.username())
+        // Obtener configuración de intentos máximos permitidos
+        int maxIntentosLogin = parametroSistemaDao.getValorInt("MAX_INTENTOS_LOGIN", 3);
+
+        Usuario usuario = usuarioDao.findByUsername(request.username())
                 .orElseThrow(() -> {
                     intentoLoginDao.registrarIntento(
                             null, request.username(), "FAIL", "Usuario no encontrado",
@@ -84,9 +91,63 @@ public class AuthService {
                     return new UnauthorizedException("Credenciales invalidas");
                 });
 
+        // Verificar si la cuenta está bloqueada
+        if ("B".equals(usuario.getEstado())) {
+            intentoLoginDao.registrarIntento(
+                    usuario.getUsuarioId(), usuario.getUsername(), "FAIL", "Cuenta bloqueada",
+                    ipAddress, userAgent,
+                    userAgentInfo.getNavegador(),
+                    userAgentInfo.getSistemaOperativo(),
+                    userAgentInfo.getDispositivo(),
+                    geoInfo.getPais(),
+                    geoInfo.getCiudad()
+            );
+            throw new UnauthorizedException("Su cuenta ha sido bloqueada por múltiples intentos fallidos. Contacte al administrador para desbloquearla");
+        }
+
+        // Verificar si la cuenta está inactiva
+        if ("I".equals(usuario.getEstado())) {
+            intentoLoginDao.registrarIntento(
+                    usuario.getUsuarioId(), usuario.getUsername(), "FAIL", "Cuenta inactiva",
+                    ipAddress, userAgent,
+                    userAgentInfo.getNavegador(),
+                    userAgentInfo.getSistemaOperativo(),
+                    userAgentInfo.getDispositivo(),
+                    geoInfo.getPais(),
+                    geoInfo.getCiudad()
+            );
+            throw new UnauthorizedException("Credenciales invalidas");
+        }
+
         if (!passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {
             int nuevosIntentos = usuario.getIntentosFallidos() + 1;
+
+            System.out.println("=== DEBUG BLOQUEO ===");
+            System.out.println("Usuario: " + usuario.getUsername());
+            System.out.println("Intentos previos: " + usuario.getIntentosFallidos());
+            System.out.println("Nuevos intentos: " + nuevosIntentos);
+            System.out.println("Max intentos permitidos: " + maxIntentosLogin);
+            System.out.println("¿Se bloqueará?: " + (nuevosIntentos >= maxIntentosLogin));
+            System.out.println("===================");
+
             usuarioDao.actualizarIntentosFallidos(usuario.getUsuarioId(), nuevosIntentos);
+
+            // Verificar si debe bloquearse la cuenta
+            if (nuevosIntentos >= maxIntentosLogin) {
+                usuarioDao.bloquearCuenta(usuario.getUsuarioId());
+                intentoLoginDao.registrarIntento(
+                        usuario.getUsuarioId(), usuario.getUsername(), "FAIL",
+                        "Password incorrecto - Cuenta bloqueada por exceder " + maxIntentosLogin + " intentos",
+                        ipAddress, userAgent,
+                        userAgentInfo.getNavegador(),
+                        userAgentInfo.getSistemaOperativo(),
+                        userAgentInfo.getDispositivo(),
+                        geoInfo.getPais(),
+                        geoInfo.getCiudad()
+                );
+                throw new UnauthorizedException("Su cuenta ha sido bloqueada por múltiples intentos fallidos. Contacte al administrador para desbloquearla");
+            }
+
             intentoLoginDao.registrarIntento(
                     usuario.getUsuarioId(), usuario.getUsername(), "FAIL", "Password incorrecto",
                     ipAddress, userAgent,
