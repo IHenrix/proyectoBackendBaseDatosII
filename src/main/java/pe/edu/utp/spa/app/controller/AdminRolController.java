@@ -7,6 +7,7 @@ import pe.edu.utp.spa.app.dto.rol.PermisoDto;
 import pe.edu.utp.spa.app.dto.rol.RolCreateRequest;
 import pe.edu.utp.spa.app.dto.rol.RolResponse;
 import pe.edu.utp.spa.app.dto.rol.RolUpdateRequest;
+import pe.edu.utp.spa.app.dto.common.ApiResponse;
 import pe.edu.utp.spa.app.service.RolService;
 
 import java.util.List;
@@ -44,5 +45,11 @@ public class AdminRolController {
     @PutMapping("/{id}")
     public ResponseEntity<RolResponse> actualizar(@PathVariable Long id, @Valid @RequestBody RolUpdateRequest request) {
         return ResponseEntity.ok(rolService.actualizar(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse> desactivar(@PathVariable Long id) {
+        rolService.desactivar(id);
+        return ResponseEntity.ok(new ApiResponse(true, "Rol desactivado"));
     }
 }

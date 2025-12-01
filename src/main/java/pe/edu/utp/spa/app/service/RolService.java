@@ -85,6 +85,18 @@ public class RolService {
         return obtener(rolId);
     }
 
+    @Transactional
+    public void desactivar(Long rolId) {
+        Rol rol = rolDao.findById(rolId).orElseThrow(() -> new NotFoundException("Rol no encontrado"));
+        Rol nuevo = Rol.builder()
+                .nombreRol(rol.getNombreRol())
+                .descripcion(rol.getDescripcion())
+                .tipoRol(rol.getTipoRol())
+                .estado("I")
+                .build();
+        rolDao.update(rolId, nuevo);
+    }
+
     @Transactional(readOnly = true)
     public List<PermisoDto> listarPermisosActivos() {
         return permisoDao.findAllActivos().stream().map(this::mapPermiso).collect(Collectors.toList());
