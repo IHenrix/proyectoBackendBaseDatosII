@@ -30,6 +30,47 @@ public class RolDao {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRol(rs));
     }
 
+    public List<Rol> findAll() {
+        String sql = "SELECT rol_id, nombre_rol, descripcion, tipo_rol, estado, fecha_creacion, fecha_modificacion FROM rol ORDER BY rol_id";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRol(rs));
+    }
+
+    public Long insert(Rol rol) {
+        String sql = """
+                INSERT INTO rol (nombre_rol, descripcion, tipo_rol, estado)
+                VALUES (?,?,?,?)
+                RETURNING rol_id
+                """;
+        Long id = jdbcTemplate.queryForObject(sql, Long.class,
+                rol.getNombreRol(),
+                rol.getDescripcion(),
+                rol.getTipoRol(),
+                rol.getEstado());
+        return id;
+    }
+
+    public void update(Long rolId, Rol rol) {
+        String sql = """
+                UPDATE rol
+                SET nombre_rol=?, descripcion=?, tipo_rol=?, estado=?, fecha_modificacion=NOW()
+                WHERE rol_id=?
+                """;
+        jdbcTemplate.update(sql,
+                rol.getNombreRol(),
+                rol.getDescripcion(),
+                rol.getTipoRol(),
+                rol.getEstado(),
+                rolId);
+    }
+
+    public java.util.Optional<Rol> findById(Long rolId) {
+        String sql = "SELECT rol_id, nombre_rol, descripcion, tipo_rol, estado, fecha_creacion, fecha_modificacion FROM rol WHERE rol_id=?";
+        return jdbcTemplate.query(sql, rs -> {
+            if (!rs.next()) return java.util.Optional.empty();
+            return java.util.Optional.of(mapRol(rs));
+        }, rolId);
+    }
+
     private Rol mapRol(java.sql.ResultSet rs) throws java.sql.SQLException {
         return Rol.builder()
                 .rolId(rs.getLong("rol_id"))

@@ -10,7 +10,7 @@ import pe.edu.utp.spa.app.service.RolService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/roles")
+@RequestMapping("/admin/roles/activos")
 public class RolController {
 
     private final RolService rolService;

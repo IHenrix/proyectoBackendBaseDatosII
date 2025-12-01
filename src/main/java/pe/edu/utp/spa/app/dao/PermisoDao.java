@@ -27,6 +27,26 @@ public class PermisoDao {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapPermiso(rs), usuarioId);
     }
 
+    public List<Permiso> findByRol(Long rolId) {
+        String sql = """
+                SELECT p.permiso_id, p.nombre_permiso, p.descripcion, p.modulo, p.estado, p.fecha_creacion, p.fecha_modificacion
+                FROM permiso p
+                JOIN rol_permiso rp ON p.permiso_id = rp.permiso_id
+                WHERE rp.rol_id=? AND rp.estado='A' AND p.estado='A'
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapPermiso(rs), rolId);
+    }
+
+    public List<Permiso> findAllActivos() {
+        String sql = """
+                SELECT p.permiso_id, p.nombre_permiso, p.descripcion, p.modulo, p.estado, p.fecha_creacion, p.fecha_modificacion
+                FROM permiso p
+                WHERE p.estado='A'
+                ORDER BY p.permiso_id
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapPermiso(rs));
+    }
+
     private Permiso mapPermiso(java.sql.ResultSet rs) throws java.sql.SQLException {
         return Permiso.builder()
                 .permisoId(rs.getLong("permiso_id"))
