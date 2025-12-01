@@ -16,52 +16,58 @@ public class ParametroSistemaDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Optional<ParametroSistema> findByCodigo(String codigo) {
+    public List<ParametroSistema> findAllActivos() {
         String sql = """
-                SELECT parametro_id, codigo, descripcion, valor, tipo_dato, estado,
-                       fecha_creacion, fecha_modificacion
+                SELECT parametro_id, codigo, descripcion, valor, tipo_dato, estado, fecha_creacion, fecha_modificacion
                 FROM parametro_sistema
-                WHERE codigo=? AND estado='A'
+                WHERE estado='A'
+                ORDER BY parametro_id
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> map(rs));
+    }
+
+    public Optional<ParametroSistema> findById(Long id) {
+        String sql = """
+                SELECT parametro_id, codigo, descripcion, valor, tipo_dato, estado, fecha_creacion, fecha_modificacion
+                FROM parametro_sistema
+                WHERE parametro_id=?
                 """;
         return jdbcTemplate.query(sql, rs -> {
             if (!rs.next()) return Optional.empty();
-            return Optional.of(mapParametroSistema(rs));
-        }, codigo);
+            return Optional.of(map(rs));
+        }, id);
     }
 
-    public List<ParametroSistema> findAllActivos() {
+    public Long insert(ParametroSistema p) {
         String sql = """
-                SELECT parametro_id, codigo, descripcion, valor, tipo_dato, estado,
-                       fecha_creacion, fecha_modificacion
-                FROM parametro_sistema
-                WHERE estado='A'
-                ORDER BY codigo
+                INSERT INTO parametro_sistema (codigo, descripcion, valor, tipo_dato, estado)
+                VALUES (?,?,?,?,?)
+                RETURNING parametro_id
                 """;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapParametroSistema(rs));
+        return jdbcTemplate.queryForObject(sql, Long.class,
+                p.getCodigo(), p.getDescripcion(), p.getValor(), p.getTipoDato(), p.getEstado());
     }
 
-    public String getValor(String codigo, String valorPorDefecto) {
-        Optional<ParametroSistema> param = findByCodigo(codigo);
-        return param.map(ParametroSistema::getValor).orElse(valorPorDefecto);
+    public void update(Long id, ParametroSistema p) {
+        String sql = """
+                UPDATE parametro_sistema
+                SET codigo=?, descripcion=?, valor=?, tipo_dato=?, estado=?, fecha_modificacion=NOW()
+                WHERE parametro_id=?
+                """;
+        jdbcTemplate.update(sql, p.getCodigo(), p.getDescripcion(), p.getValor(), p.getTipoDato(), p.getEstado(), id);
     }
 
-    public Integer getValorInt(String codigo, Integer valorPorDefecto) {
-        String valor = getValor(codigo, null);
-        if (valor == null) return valorPorDefecto;
+    public int getValorInt(String codigo, int defaultValue) {
         try {
-            return Integer.parseInt(valor);
-        } catch (NumberFormatException e) {
-            return valorPorDefecto;
+            String sql = "SELECT valor FROM parametro_sistema WHERE codigo=? AND estado='A' LIMIT 1";
+            String valor = jdbcTemplate.queryForObject(sql, String.class, codigo);
+            return valor != null ? Integer.parseInt(valor) : defaultValue;
+        } catch (Exception e) {
+            return defaultValue;
         }
     }
 
-    public Boolean getValorBoolean(String codigo, Boolean valorPorDefecto) {
-        String valor = getValor(codigo, null);
-        if (valor == null) return valorPorDefecto;
-        return "true".equalsIgnoreCase(valor) || "1".equals(valor);
-    }
-
-    private ParametroSistema mapParametroSistema(java.sql.ResultSet rs) throws java.sql.SQLException {
+    private ParametroSistema map(java.sql.ResultSet rs) throws java.sql.SQLException {
         return ParametroSistema.builder()
                 .parametroId(rs.getLong("parametro_id"))
                 .codigo(rs.getString("codigo"))
