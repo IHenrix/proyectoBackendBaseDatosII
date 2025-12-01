@@ -114,8 +114,8 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioResponse> listarActivos() {
-        List<Usuario> usuarios = usuarioDao.findAllActivos();
+    public List<UsuarioResponse> buscar(String nombres, String apellidoPaterno, String apellidoMaterno, String username) {
+        List<Usuario> usuarios = usuarioDao.findByFiltros(nombres, apellidoPaterno, apellidoMaterno, username);
         return usuarios.stream()
                 .map(u -> {
                     u.setRoles(rolDao.findByUsuario(u.getUsuarioId()));

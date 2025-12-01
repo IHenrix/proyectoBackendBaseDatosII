@@ -22,8 +22,13 @@ public class AdminUsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> listar() {
-        return ResponseEntity.ok(usuarioService.listarActivos());
+    public ResponseEntity<List<UsuarioResponse>> listar(
+            @RequestParam(required = false) String nombres,
+            @RequestParam(required = false) String apellidoPaterno,
+            @RequestParam(required = false) String apellidoMaterno,
+            @RequestParam(required = false) String username
+    ) {
+        return ResponseEntity.ok(usuarioService.buscar(nombres, apellidoPaterno, apellidoMaterno, username));
     }
 
     @GetMapping("/{id}")

@@ -162,6 +162,39 @@ public class UsuarioDao {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapUsuario(rs));
     }
 
+    public List<Usuario> findByFiltros(String nombres, String apellidoPaterno, String apellidoMaterno, String username) {
+        StringBuilder sb = new StringBuilder("""
+                SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
+                       u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
+                       p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
+                       p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
+                FROM usuario u
+                JOIN persona p ON u.persona_id = p.persona_id
+                WHERE 1=1
+                """);
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (nombres != null && !nombres.isBlank()) {
+            sb.append(" AND lower(p.nombres) LIKE ?");
+            params.add("%" + nombres.toLowerCase() + "%");
+        }
+        if (apellidoPaterno != null && !apellidoPaterno.isBlank()) {
+            sb.append(" AND lower(p.apellido_paterno) LIKE ?");
+            params.add("%" + apellidoPaterno.toLowerCase() + "%");
+        }
+        if (apellidoMaterno != null && !apellidoMaterno.isBlank()) {
+            sb.append(" AND lower(p.apellido_materno) LIKE ?");
+            params.add("%" + apellidoMaterno.toLowerCase() + "%");
+        }
+        if (username != null && !username.isBlank()) {
+            sb.append(" AND lower(u.username) LIKE ?");
+            params.add("%" + username.toLowerCase() + "%");
+        }
+        sb.append(" ORDER BY u.usuario_id");
+        return jdbcTemplate.query(sb.toString(), params.toArray(), (rs, rowNum) -> mapUsuario(rs));
+    }
+
     public boolean existsByUsername(String username, Long excludeId) {
         String sql = excludeId == null
                 ? "SELECT COUNT(1) FROM usuario WHERE username=?"
