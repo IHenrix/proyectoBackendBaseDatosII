@@ -69,10 +69,17 @@ public class PersonaDao {
 
     public Optional<Persona> findById(Long personaId) {
         String sql = """
-                SELECT persona_id, nombres, apellido_paterno, apellido_materno, tipo_documento_id, numero_documento,
-                       email, telefono, fecha_nacimiento, genero, direccion, estado, fecha_creacion, fecha_modificacion
-                FROM persona
-                WHERE persona_id=?
+                SELECT p.persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id, p.numero_documento,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
+                       p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado, p.fecha_creacion, p.fecha_modificacion
+                FROM persona p
+                WHERE p.persona_id=?
                 """;
         return jdbcTemplate.query(sql, rs -> {
             if (!rs.next()) return Optional.empty();
@@ -83,6 +90,13 @@ public class PersonaDao {
     public java.util.List<Persona> findByFiltros(String nombres, String apellidoPaterno, String numeroDocumento, Boolean sinUsuario) {
         StringBuilder sb = new StringBuilder("""
                 SELECT p.persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id, p.numero_documento,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado, p.fecha_creacion, p.fecha_modificacion
                 FROM persona p
                 WHERE 1=1
@@ -120,6 +134,7 @@ public class PersonaDao {
                 .apellidoPaterno(rs.getString("apellido_paterno"))
                 .apellidoMaterno(rs.getString("apellido_materno"))
                 .tipoDocumentoId(rs.getLong("tipo_documento_id"))
+                .tipoDocumentoNombre(rs.getString("tipo_documento_nombre"))
                 .numeroDocumento(rs.getString("numero_documento"))
                 .email(rs.getString("email"))
                 .telefono(rs.getString("telefono"))

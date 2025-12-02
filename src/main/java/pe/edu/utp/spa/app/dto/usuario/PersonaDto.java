@@ -8,6 +8,7 @@ public record PersonaDto(
         String apellidoPaterno,
         String apellidoMaterno,
         Long tipoDocumentoId,
+        String tipoDocumentoNombre,
         String numeroDocumento,
         String email,
         String telefono,

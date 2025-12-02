@@ -19,6 +19,7 @@ public class Persona {
     private String apellidoMaterno;
     private Long tipoDocumentoId;
     private String numeroDocumento;
+    private String tipoDocumentoNombre;
     private String email;
     private String telefono;
     private LocalDate fechaNacimiento;

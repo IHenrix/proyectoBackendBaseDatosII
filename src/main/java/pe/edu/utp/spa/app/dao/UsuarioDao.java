@@ -102,6 +102,13 @@ public class UsuarioDao {
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
                        u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
                        p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
@@ -119,6 +126,13 @@ public class UsuarioDao {
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
                        u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
                        p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
@@ -136,6 +150,13 @@ public class UsuarioDao {
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
                        u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
                        p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
@@ -153,6 +174,13 @@ public class UsuarioDao {
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
                        u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
                        p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
@@ -167,6 +195,13 @@ public class UsuarioDao {
                 SELECT u.usuario_id, u.persona_id, u.username, u.password_hash, u.tipo_usuario, u.intentos_fallidos,
                        u.fecha_ultimo_acceso, u.estado, u.fecha_creacion, u.fecha_modificacion,
                        p.persona_id as p_persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id,
+                       CASE
+                           WHEN p.tipo_documento_id = 1 THEN 'DNI'
+                           WHEN p.tipo_documento_id = 2 THEN 'CE'
+                           WHEN p.tipo_documento_id = 3 THEN 'PASAPORTE'
+                           WHEN p.tipo_documento_id = 4 THEN 'RUC'
+                           ELSE 'OTROS'
+                       END AS tipo_documento_nombre,
                        p.numero_documento, p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado as p_estado,
                        p.fecha_creacion as p_fecha_creacion, p.fecha_modificacion as p_fecha_modificacion
                 FROM usuario u
@@ -243,6 +278,7 @@ public class UsuarioDao {
                 .apellidoMaterno(rs.getString("apellido_materno"))
                 .tipoDocumentoId(rs.getLong("tipo_documento_id"))
                 .numeroDocumento(rs.getString("numero_documento"))
+                .tipoDocumentoNombre(rs.getString("tipo_documento_nombre"))
                 .email(rs.getString("email"))
                 .telefono(rs.getString("telefono"))
                 .fechaNacimiento(rs.getDate("fecha_nacimiento") != null ? rs.getDate("fecha_nacimiento").toLocalDate() : null)

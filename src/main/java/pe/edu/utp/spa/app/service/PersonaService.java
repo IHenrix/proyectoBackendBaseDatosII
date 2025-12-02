@@ -85,6 +85,7 @@ public class PersonaService {
                 persona.getApellidoPaterno(),
                 persona.getApellidoMaterno(),
                 persona.getTipoDocumentoId(),
+                persona.getTipoDocumentoNombre(),
                 persona.getNumeroDocumento(),
                 persona.getEmail(),
                 persona.getTelefono(),

@@ -237,6 +237,7 @@ public class UsuarioService {
                 usuario.getPersona().getApellidoPaterno(),
                 usuario.getPersona().getApellidoMaterno(),
                 usuario.getPersona().getTipoDocumentoId(),
+                usuario.getPersona().getTipoDocumentoNombre(),
                 usuario.getPersona().getNumeroDocumento(),
                 usuario.getPersona().getEmail(),
                 usuario.getPersona().getTelefono(),
