@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.utp.spa.app.dto.common.ApiResponse;
+import pe.edu.utp.spa.app.dto.usuario.UsuarioAccesoUpdateRequest;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioCreateRequest;
+import pe.edu.utp.spa.app.dto.usuario.UsuarioFromPersonaRequest;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioResponse;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioUpdateRequest;
 import pe.edu.utp.spa.app.service.UsuarioService;
@@ -41,9 +43,19 @@ public class AdminUsuarioController {
         return ResponseEntity.ok(usuarioService.crear(request));
     }
 
+    @PostMapping("/desde-persona")
+    public ResponseEntity<UsuarioResponse> crearDesdePersona(@Valid @RequestBody UsuarioFromPersonaRequest request) {
+        return ResponseEntity.ok(usuarioService.crearDesdePersona(request));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequest request) {
         return ResponseEntity.ok(usuarioService.actualizar(id, request));
+    }
+
+    @PutMapping("/{id}/acceso")
+    public ResponseEntity<UsuarioResponse> actualizarAcceso(@PathVariable Long id, @Valid @RequestBody UsuarioAccesoUpdateRequest request) {
+        return ResponseEntity.ok(usuarioService.actualizarAcceso(id, request));
     }
 
     @DeleteMapping("/{id}")

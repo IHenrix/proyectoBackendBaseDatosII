@@ -225,6 +225,16 @@ public class UsuarioDao {
         return count != null && count > 0;
     }
 
+    public boolean existsByPersonaId(Long personaId, Long excludeUsuarioId) {
+        String sql = excludeUsuarioId == null
+                ? "SELECT COUNT(1) FROM usuario WHERE persona_id=?"
+                : "SELECT COUNT(1) FROM usuario WHERE persona_id=? AND usuario_id<>?";
+        Integer count = excludeUsuarioId == null
+                ? jdbcTemplate.queryForObject(sql, Integer.class, personaId)
+                : jdbcTemplate.queryForObject(sql, Integer.class, personaId, excludeUsuarioId);
+        return count != null && count > 0;
+    }
+
     private Usuario mapUsuario(java.sql.ResultSet rs) throws java.sql.SQLException {
         Persona persona = Persona.builder()
                 .personaId(rs.getLong("p_persona_id"))

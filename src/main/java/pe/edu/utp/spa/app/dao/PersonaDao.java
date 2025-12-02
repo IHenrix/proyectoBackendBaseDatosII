@@ -80,6 +80,34 @@ public class PersonaDao {
         }, personaId);
     }
 
+    public java.util.List<Persona> findByFiltros(String nombres, String apellidoPaterno, String numeroDocumento, Boolean sinUsuario) {
+        StringBuilder sb = new StringBuilder("""
+                SELECT p.persona_id, p.nombres, p.apellido_paterno, p.apellido_materno, p.tipo_documento_id, p.numero_documento,
+                       p.email, p.telefono, p.fecha_nacimiento, p.genero, p.direccion, p.estado, p.fecha_creacion, p.fecha_modificacion
+                FROM persona p
+                WHERE 1=1
+                """);
+        java.util.List<Object> params = new java.util.ArrayList<>();
+
+        if (nombres != null && !nombres.isBlank()) {
+            sb.append(" AND lower(p.nombres) LIKE ?");
+            params.add("%" + nombres.toLowerCase() + "%");
+        }
+        if (apellidoPaterno != null && !apellidoPaterno.isBlank()) {
+            sb.append(" AND lower(p.apellido_paterno) LIKE ?");
+            params.add("%" + apellidoPaterno.toLowerCase() + "%");
+        }
+        if (numeroDocumento != null && !numeroDocumento.isBlank()) {
+            sb.append(" AND p.numero_documento LIKE ?");
+            params.add("%" + numeroDocumento + "%");
+        }
+        if (Boolean.TRUE.equals(sinUsuario)) {
+            sb.append(" AND NOT EXISTS (SELECT 1 FROM usuario u WHERE u.persona_id = p.persona_id AND u.estado <> 'I')");
+        }
+        sb.append(" ORDER BY p.persona_id");
+        return jdbcTemplate.query(sb.toString(), params.toArray(), (rs, rowNum) -> mapPersona(rs));
+    }
+
     public void deactivate(Long personaId) {
         String sql = "UPDATE persona SET estado='I', fecha_modificacion=NOW() WHERE persona_id=?";
         jdbcTemplate.update(sql, personaId);

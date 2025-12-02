@@ -9,8 +9,10 @@ import pe.edu.utp.spa.app.dao.UsuarioDao;
 import pe.edu.utp.spa.app.dao.UsuarioRolDao;
 import pe.edu.utp.spa.app.dto.usuario.PersonaDto;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioCreateRequest;
+import pe.edu.utp.spa.app.dto.usuario.UsuarioFromPersonaRequest;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioResponse;
 import pe.edu.utp.spa.app.dto.usuario.UsuarioUpdateRequest;
+import pe.edu.utp.spa.app.dto.usuario.UsuarioAccesoUpdateRequest;
 import pe.edu.utp.spa.app.exception.BadRequestException;
 import pe.edu.utp.spa.app.exception.NotFoundException;
 import pe.edu.utp.spa.app.model.Persona;
@@ -74,6 +76,31 @@ public class UsuarioService {
     }
 
     @Transactional
+    public UsuarioResponse crearDesdePersona(UsuarioFromPersonaRequest request) {
+        Persona persona = personaDao.findById(request.personaId())
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada"));
+        if (usuarioDao.existsByPersonaId(persona.getPersonaId(), null)) {
+            throw new BadRequestException("La persona ya tiene un usuario asignado");
+        }
+        validarUnicidad(request.username(), null, persona.getTipoDocumentoId(), persona.getNumeroDocumento(), persona.getEmail(), persona.getPersonaId());
+
+        Usuario usuario = Usuario.builder()
+                .personaId(persona.getPersonaId())
+                .username(request.username())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .tipoUsuario(request.tipoUsuario())
+                .estado("A")
+                .build();
+        Long usuarioId = usuarioDao.insert(usuario);
+        usuarioRolDao.replaceRoles(usuarioId, request.rolesIds());
+
+        Usuario creado = usuarioDao.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado luego de crear"));
+        creado.setRoles(rolDao.findByUsuario(usuarioId));
+        return mapResponse(creado);
+    }
+
+    @Transactional
     public UsuarioResponse actualizar(Long usuarioId, UsuarioUpdateRequest request) {
         Usuario existente = usuarioDao.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
@@ -102,6 +129,36 @@ public class UsuarioService {
                         : existente.getPasswordHash())
                 .tipoUsuario(request.tipoUsuario())
                 .estado(request.estado())
+                .build();
+        boolean updatePassword = request.password() != null && !request.password().isBlank();
+        usuarioDao.update(usuarioId, usuario, updatePassword);
+        usuarioRolDao.replaceRoles(usuarioId, request.rolesIds());
+
+        Usuario actualizado = usuarioDao.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado luego de actualizar"));
+        actualizado.setRoles(rolDao.findByUsuario(usuarioId));
+        return mapResponse(actualizado);
+    }
+
+    @Transactional
+    public UsuarioResponse actualizarAcceso(Long usuarioId, UsuarioAccesoUpdateRequest request) {
+        Usuario existente = usuarioDao.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        if (usuarioDao.existsByUsername(request.username(), usuarioId)) {
+            throw new BadRequestException("El username ya existe");
+        }
+        if (request.rolesIds() == null || request.rolesIds().isEmpty()) {
+            throw new BadRequestException("Debe asignar al menos un rol");
+        }
+
+        Usuario usuario = Usuario.builder()
+                .username(request.username())
+                .passwordHash(request.password() != null && !request.password().isBlank()
+                        ? passwordEncoder.encode(request.password())
+                        : existente.getPasswordHash())
+                .tipoUsuario(request.tipoUsuario())
+                .estado(request.estado() != null && !request.estado().isBlank() ? request.estado() : existente.getEstado())
                 .build();
         boolean updatePassword = request.password() != null && !request.password().isBlank();
         usuarioDao.update(usuarioId, usuario, updatePassword);
@@ -167,6 +224,9 @@ public class UsuarioService {
         }
         if (usuarioDao.existsByEmail(email, personaId)) {
             throw new BadRequestException("El email ya existe");
+        }
+        if (personaId != null && usuarioDao.existsByPersonaId(personaId, usuarioId)) {
+            throw new BadRequestException("La persona ya tiene un usuario asignado");
         }
     }
 
