@@ -270,6 +270,19 @@ public class UsuarioDao {
         return count != null && count > 0;
     }
 
+    public Integer findEmpleadoIdByPersonaId(Long personaId) {
+        String sql = """
+                SELECT e.empleado_id
+                FROM empleado e
+                WHERE e.persona_id = ? AND e.estado = 'A'
+                LIMIT 1
+                """;
+        return jdbcTemplate.query(sql, rs -> {
+            if (!rs.next()) return null;
+            return rs.getInt("empleado_id");
+        }, personaId);
+    }
+
     private Usuario mapUsuario(java.sql.ResultSet rs) throws java.sql.SQLException {
         Persona persona = Persona.builder()
                 .personaId(rs.getLong("p_persona_id"))

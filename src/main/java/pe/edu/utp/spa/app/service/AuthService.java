@@ -183,6 +183,9 @@ public class AuthService {
                 geoInfo.getCiudad()
         );
 
+        // Obtener empleado_id si existe (NULL si no es empleado)
+        Integer empleadoId = usuarioDao.findEmpleadoIdByPersonaId(usuario.getPersonaId());
+
         return new LoginResponse(true, "Login exitoso", accessToken, refreshToken, "Bearer",
                 usuario.getUsuarioId(), usuario.getUsername(), usuario.getTipoUsuario(),
                 usuario.getPersona().getNombres(),
@@ -190,6 +193,7 @@ public class AuthService {
                 usuario.getPersona().getApellidoMaterno(),
                 usuario.getPersona().getEmail(),
                 usuario.getPersona().getTelefono(),
+                empleadoId,
                 roles, permisos);
     }
 
@@ -212,6 +216,9 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.generateAccessToken(usuario, roles, permisos);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(usuario, roles);
 
+        // Obtener empleado_id si existe (NULL si no es empleado)
+        Integer empleadoId = usuarioDao.findEmpleadoIdByPersonaId(usuario.getPersonaId());
+
         return new LoginResponse(true, "Token renovado", newAccessToken, newRefreshToken, "Bearer",
                 usuario.getUsuarioId(), usuario.getUsername(), usuario.getTipoUsuario(),
                 usuario.getPersona().getNombres(),
@@ -219,6 +226,7 @@ public class AuthService {
                 usuario.getPersona().getApellidoMaterno(),
                 usuario.getPersona().getEmail(),
                 usuario.getPersona().getTelefono(),
+                empleadoId,
                 roles, permisos);
     }
 

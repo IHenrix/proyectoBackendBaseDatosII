@@ -16,6 +16,7 @@ public record LoginResponse(
         String apellidoMaterno,
         String email,
         String telefono,
+        Integer empleadoId,
         List<String> roles,
         List<String> permisos
 ) {}
