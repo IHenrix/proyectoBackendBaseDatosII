@@ -70,11 +70,4 @@ jobs:
           app-name: 'UTP-BDII-SPA'
           slot-name: 'Production'
           package: 'app.jar'
-
-      - name: Configure Spring Profile for Production
-        run: |
-          az webapp config appsettings set \
-            --name UTP-BDII-SPA \
-            --resource-group UTP-BDII-SPA_group \
-            --settings SPRING_PROFILES_ACTIVE=prod
           
