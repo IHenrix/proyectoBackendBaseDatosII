@@ -3,7 +3,7 @@ name: Build and deploy JAR app to Azure Web App - UTP-BDII-SPA
 on:
   push:
     branches:
-      - development
+      - production
   workflow_dispatch:
 
 jobs:
