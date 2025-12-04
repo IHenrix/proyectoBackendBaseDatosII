@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/roles")
+
 public class AdminRolController {
 
     private final RolService rolService;
