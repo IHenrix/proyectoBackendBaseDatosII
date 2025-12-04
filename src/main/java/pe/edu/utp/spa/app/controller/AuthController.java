@@ -14,6 +14,7 @@ import pe.edu.utp.spa.app.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
+
 public class AuthController {
 
     private final AuthService authService;
