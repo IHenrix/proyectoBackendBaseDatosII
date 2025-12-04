@@ -68,13 +68,11 @@ public class AuthService {
 
     @Transactional(noRollbackFor = UnauthorizedException.class)
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
-        // Extraer información de la solicitud
         String ipAddress = getClientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         UserAgentInfo userAgentInfo = UserAgentParser.parse(userAgent);
         GeoLocationInfo geoInfo = geoLocationService.getGeoLocation(ipAddress);
 
-        // Obtener configuración de intentos máximos permitidos
         int maxIntentosLogin = parametroSistemaDao.getValorInt("MAX_INTENTOS_LOGIN", 3);
 
         Usuario usuario = usuarioDao.findByUsername(request.username())
