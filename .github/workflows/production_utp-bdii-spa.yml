@@ -1,19 +1,16 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy JAR app to Azure Web App - UTP-BDII-SPA
 
 on:
   push:
     branches:
-      - production
+      - development
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -24,34 +21,44 @@ jobs:
           java-version: '17'
           distribution: 'microsoft'
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+          path: 'build/libs/*.jar'
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      
+
+      - name: Select and rename jar
+        run: |
+          ls -R
+          JAR=$(find . -name "*.jar" ! -name "*plain*" | head -n 1)
+          echo "Using JAR: $JAR"
+          mv "$JAR" app.jar
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8A46866DFC77468BB9FDB734B6107E96 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3D395F1EF19649B2A9519FAEBE9FF034 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B9F15BB191A4AD8A6E1A0BFDDA76493 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_72947B0FFA5F423396726D0163ACE4D8 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A43F495A544A482991AEB32415AFBFFC }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A0B5C1C0F5FF435893B0049BCCB2C7EA }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -59,5 +66,11 @@ jobs:
         with:
           app-name: 'UTP-BDII-SPA'
           slot-name: 'Production'
-          package: '*.jar'
-          
+          package: 'app.jar'
+
+      - name: Configure Spring Profile for Production
+        run: |
+          az webapp config appsettings set \
+            --name UTP-BDII-SPA \
+            --resource-group UTP-BDII-SPA_group \
+            --settings SPRING_PROFILES_ACTIVE=prod
