@@ -184,7 +184,7 @@ public class AuthService {
         // Obtener empleado_id si existe (NULL si no es empleado)
         Integer empleadoId = usuarioDao.findEmpleadoIdByPersonaId(usuario.getPersonaId());
 
-        return new LoginResponse(true, "Login exitoso", accessToken, refreshToken, "Bearer",
+        return new LoginResponse(true, "Login exitoso (pedro)", accessToken, refreshToken, "Bearer",
                 usuario.getUsuarioId(), usuario.getUsername(), usuario.getTipoUsuario(),
                 usuario.getPersona().getNombres(),
                 usuario.getPersona().getApellidoPaterno(),
